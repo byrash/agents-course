@@ -233,3 +233,60 @@ docker run -d `
   --restart unless-stopped `
   byrash/agents-course:latest
 ```
+
+---
+
+## Local Testing with GitHub Copilot
+
+To test the image locally using GitHub Copilot as the LLM provider instead of OpenAI.
+
+### 1. Authorize Copilot
+
+If you have a token from another machine, copy it:
+
+```bash
+mkdir -p copilot-tokens/copilot
+echo -n "YOUR_ACCESS_TOKEN" > copilot-tokens/copilot/access-token
+chmod 600 copilot-tokens/copilot/access-token
+```
+
+If you don't have a token, start the container first (steps 2–3), then run the OAuth flow inside it:
+
+```bash
+docker exec -it agents-course zeroclaw auth login copilot
+```
+
+Follow the URL and enter the code to authorize.
+
+### 2. Create `.env`
+
+```
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_USER_ID=your_user_id
+LLM_PROVIDER=copilot
+LLM_MODEL=gpt-5.2
+```
+
+### 3. Run
+
+```bash
+mkdir -p workspace memory copilot-tokens/copilot
+
+docker run -d \
+  --name agents-course \
+  --env-file .env \
+  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace \
+  -v ./memory:/home/zeroclaw/.zeroclaw/memory \
+  -v ./copilot-tokens:/home/zeroclaw/.config/zeroclaw \
+  -p 42617:42617 \
+  --restart unless-stopped \
+  byrash/agents-course:latest
+```
+
+### 4. Verify
+
+```bash
+docker logs -f agents-course
+```
+
+Look for `Warming up provider connection pool provider="copilot"` without a failure message.
