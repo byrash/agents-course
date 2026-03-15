@@ -1,0 +1,6 @@
+.env
+.env.*
+workspace/
+memory/
+*.md
+.git
