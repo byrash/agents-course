@@ -1,4 +1,10 @@
 .env
-copilot-tokens/
-workspace/
-memory/
+
+# OpenTofu / Terraform
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/*.tfplan
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/students/*.tfvars
+!infra/students/example.tfvars

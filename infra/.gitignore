@@ -1,0 +1,11 @@
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+
+# Student configs contain API tokens and secrets
+students/*.tfvars
+!students/example.tfvars

@@ -4,6 +4,75 @@ An 8-session hands-on course for high school students with no prior coding exper
 
 ---
 
+## Prerequisites — Before the Course Starts
+
+These steps must be completed **before Session 1** so in-class time is spent learning, not troubleshooting account creation.
+
+### What Parents Need to Do (20 minutes, one-time)
+
+**Step 1: Create a Hetzner Cloud Account (~5 min)**
+- Go to [console.hetzner.cloud](https://console.hetzner.cloud) and sign up
+- A credit card is required (the server costs ~$4/month)
+- Once signed in, go to **Security → API Tokens → Generate API Token** (read/write)
+- Send the API token to the instructor
+
+**Step 2: Create an OpenRouter Account (~5 min)**
+- Go to [openrouter.ai](https://openrouter.ai) and sign up (Google or GitHub login)
+- You get **$1 free credit** immediately (enough for weeks of casual use)
+- Optionally add $5 credit at [openrouter.ai/settings/credits](https://openrouter.ai/settings/credits)
+- Go to [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) → **Create Key**
+- Set a **credit limit** on the key (e.g. $5) so the student can't overspend
+- Send the API key to the instructor (starts with `sk-or-v1-`)
+
+**Step 3: Install Telegram (~5 min)**
+- Download Telegram on the student's phone: [telegram.org](https://telegram.org)
+- Create an account if they don't have one
+
+### What the Student Needs to Do (5 minutes)
+
+**Step 1: Create a Telegram Bot**
+- Open Telegram and search for **@BotFather**
+- Send `/newbot`, pick a name and username (must end in `bot`)
+- Send the bot token to the instructor
+
+**Step 2: Get Telegram User ID**
+- Search for **@userinfobot** on Telegram, send any message
+- Send the user ID number to the instructor
+
+### What the Instructor Does
+
+Once the above is collected for each student, the instructor deploys the server:
+```bash
+cd infra
+cp students/example.tfvars students/<student-name>.tfvars
+# Fill in: hcloud_token, student_name, telegram_bot_token, telegram_user_id, openrouter_api_key
+./scripts/deploy-student.sh students/<student-name>.tfvars
+```
+
+The server is live in ~4 minutes. The student can message their bot on Telegram immediately.
+
+### Cost Summary for Parents
+
+| Item | Monthly Cost | Notes |
+|------|-------------|-------|
+| Hetzner Cloud server | ~$4/month | ARM server, billed hourly |
+| OpenRouter LLM access | ~$0.50–2/month | Pay-per-use, $1 free to start |
+| **Total** | **~$4.50–6/month** | Cancel anytime, no contracts |
+
+### Helpful Links
+
+| Resource | URL |
+|----------|-----|
+| Hetzner Cloud | [console.hetzner.cloud](https://console.hetzner.cloud) |
+| OpenRouter | [openrouter.ai](https://openrouter.ai) |
+| OpenRouter Keys | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) |
+| OpenRouter Credits | [openrouter.ai/settings/credits](https://openrouter.ai/settings/credits) |
+| Telegram Download | [telegram.org](https://telegram.org) |
+| @BotFather (in Telegram) | Search "BotFather" inside Telegram app |
+| @userinfobot (in Telegram) | Search "userinfobot" inside Telegram app |
+
+---
+
 ## Session 1: What is AI?
 
 **Goal:** Demystify AI. Students understand what it actually is, what it isn't, and realize they already use it every day.
@@ -71,42 +140,39 @@ An 8-session hands-on course for high school students with no prior coding exper
 
 **Goal:** Every student has a working AI agent on their phone by end of class.
 
-**Prerequisites (assigned as homework before this session):**
-- Install Docker Desktop (mac/windows/linux)
-- Install Telegram on phone
-- Parent/guardian creates OpenAI account and API key with $5-10 spending limit
+**Prerequisites (completed before this session — see Prerequisites section above):**
+- Parent created Hetzner Cloud account and shared API token with instructor
+- Parent created OpenRouter account and shared API key with instructor
+- Student created Telegram bot and shared bot token + user ID with instructor
+- Instructor deployed each student's server via OpenTofu
 
-**Step-by-Step Walkthrough:**
+**In-Class Walkthrough:**
 
-1. **Create a Telegram Bot** (10 min)
-   - Open Telegram, search @BotFather, send /newbot
-   - Pick a name and username
-   - Save the bot token
+1. **Verify Your Agent is Live** (5 min)
+   - Instructor confirms each student's server is running
+   - Each student opens Telegram, finds their bot by username
 
-2. **Get Telegram User ID** (2 min)
-   - Search @userinfobot, send any message
-   - Save the user ID number
+2. **First Message** (5 min)
+   - Send "Hello!" to your bot
+   - Celebrate when it responds!
 
-3. **Create Project Folder** (5 min)
-   - Open terminal / PowerShell
-   - `mkdir zeroclaw && cd zeroclaw`
-   - `mkdir workspace memory`
+3. **Explore the Dashboard** (5 min)
+   - Open `http://YOUR_SERVER_IP:42617` in a browser
+   - See conversations and agent status
 
-4. **Create .env File** (5 min)
-   - Create `.env` with bot token, user ID, and OpenAI API key
-   - Instructor walks through each line
+4. **SSH Into Your Server** (10 min)
+   - Instructor walks through: `ssh zeroclaw@YOUR_SERVER_IP`
+   - Navigate to `~/.zeroclaw/workspace/`
+   - Look at the files that control your agent
 
-5. **Start the Agent** (5 min)
-   - Run the `docker run` command
-   - Wait for container to start
-
-6. **First Message** (5 min)
-   - Open Telegram, find the bot, send "Hello!"
-   - Celebrate when it responds
+5. **Try a Quick Edit** (10 min)
+   - Open `IDENTITY.md` and change the agent's name
+   - Restart: `sudo systemctl restart zeroclaw`
+   - Send a message — see the new name in action
 
 **Troubleshooting Buffer:** 15 min for students who hit issues
 
-**Key Takeaway:** You now have your own AI agent running on your computer that you can talk to from your phone.
+**Key Takeaway:** You now have your own AI agent running on a cloud server that you can talk to from your phone — anywhere, anytime.
 
 ---
 
@@ -125,14 +191,15 @@ An 8-session hands-on course for high school students with no prior coding exper
 - The feedback loop: edit file → restart → test → repeat
 
 **Activity 1: Change the Personality**
-- Open `workspace/SOUL.md` in a text editor
+- SSH in: `ssh zeroclaw@YOUR_SERVER_IP`
+- Edit `~/.zeroclaw/workspace/SOUL.md`
 - Change it to: "You are a pirate captain. Respond in pirate speak."
-- Run `docker restart agents-course`
+- Restart: `sudo systemctl restart zeroclaw`
 - Send a message — observe the pirate responses
 - Try other personalities: sports coach, cartoon character, Shakespearean actor
 
 **Activity 2: Add a Rule**
-- Open `workspace/AGENTS.md`
+- Edit `~/.zeroclaw/workspace/AGENTS.md`
 - Add: "Always end your response with a fun fact"
 - Restart and test — every response now ends with a fun fact
 
@@ -202,11 +269,12 @@ Fill out the design worksheet:
 
 **Part 3: Build It (20 min)**
 
-- Edit `workspace/IDENTITY.md` — name and role
-- Edit `workspace/SOUL.md` — personality description
-- Edit `workspace/AGENTS.md` — rules
-- Edit `workspace/USER.md` — info about yourself
-- Restart: `docker restart agents-course`
+- SSH in: `ssh zeroclaw@YOUR_SERVER_IP`
+- Edit `~/.zeroclaw/workspace/IDENTITY.md` — name and role
+- Edit `~/.zeroclaw/workspace/SOUL.md` — personality description
+- Edit `~/.zeroclaw/workspace/AGENTS.md` — rules
+- Edit `~/.zeroclaw/workspace/USER.md` — info about yourself
+- Restart: `sudo systemctl restart zeroclaw`
 - Test on Telegram
 
 **Part 4: Iterate (10 min)**
@@ -261,14 +329,13 @@ Fill out the design worksheet:
 
 ```mermaid
 flowchart TD
-    subgraph student [Student's Machine]
-        Docker["Docker Container"]
-        Config[".env file\n(API key, bot token)"]
+    subgraph student [Hetzner Cloud Server]
+        Config["config.toml\n(API key, bot token)"]
         Workspace["workspace/\nAGENTS.md, SOUL.md\nIDENTITY.md, USER.md"]
         Memory["memory/\nSQLite database"]
     end
 
-    subgraph zeroclawDaemon [ZeroClaw Daemon — inside container]
+    subgraph zeroclawDaemon [ZeroClaw Daemon — on server]
         Gateway["Gateway\nhttp://localhost:42617"]
         AgentCore["Agent Core"]
         ToolRunner["Tool Runner"]
@@ -283,7 +350,7 @@ flowchart TD
     end
 
     subgraph external [External Services]
-        OpenAI["OpenAI API\n(GPT-4o brain)"]
+        OpenAI["OpenRouter\n(LLM brain)"]
         TelegramAPI["Telegram Bot API"]
         Internet["Websites &\nSearch Results"]
     end
@@ -291,7 +358,7 @@ flowchart TD
     Student["Student on Phone"] -->|sends message| TelegramAPI
     TelegramAPI -->|delivers message| AgentCore
 
-    Config -->|credentials| Docker
+    Config -->|credentials| AgentCore
     Workspace -->|personality & rules| AgentCore
 
     AgentCore -->|"1. sends prompt +\ntools list"| OpenAI
@@ -325,7 +392,7 @@ sequenceDiagram
     participant S as Student (Telegram)
     participant T as Telegram API
     participant A as Agent Core
-    participant LLM as OpenAI GPT-4o
+    participant LLM as OpenRouter LLM
     participant Tool as Tools (search/browser/memory)
     participant Web as Internet
 
@@ -356,34 +423,35 @@ flowchart LR
         AGENTS["AGENTS.md\nRules"]
         IDENTITY["IDENTITY.md\nName & Role"]
         USER["USER.md\nPreferences"]
-        ENV[".env\nAPI keys"]
+        CONFIG["config.toml\nAPI keys"]
     end
 
-    subgraph fixed ["Pre-built in Docker Image"]
+    subgraph fixed ["Pre-installed on Server (via OpenTofu)"]
         ZeroClaw["ZeroClaw Binary"]
         NodeJS["Node.js"]
         Playwright["Playwright + Chromium"]
         Xvfb["Xvfb Display"]
-        Entrypoint["entrypoint.sh"]
-        ConfigTemplate["config.template.toml"]
+        Systemd["systemd Service"]
     end
 
     studentControls -->|"edit & restart"| ZeroClaw
-    fixed -->|"never touched\nby students"| ZeroClaw
+    fixed -->|"managed by\ninstructor"| ZeroClaw
 ```
 
 ---
 
 ## Materials Checklist
 
-| Item | Who Provides |
-|------|-------------|
-| Docker Desktop installed | Student (homework before Session 4) |
-| Telegram on phone | Student |
-| OpenAI API key with spending limit | Parent/guardian |
-| Docker image (`byrash/agents-course:latest`) | Instructor (pre-published) |
-| Slide deck (`AI_Agents_Course.pptx`) | Instructor |
-| Projector / screen for demos | Classroom |
+| Item | Who Provides | When |
+|------|-------------|------|
+| Hetzner Cloud account + API token | Parent | Before Session 1 |
+| OpenRouter account + API key | Parent | Before Session 1 |
+| Telegram on phone | Student | Before Session 1 |
+| Telegram bot token + user ID | Student | Before Session 1 |
+| Server deployment via OpenTofu | Instructor | Before Session 4 |
+| Slide deck (`AI_Agents_Course.pptx`) | Instructor | Session 1 |
+| Parent info slide (`Parent_Setup_Guide.pptx`) | Instructor | Before Session 1 |
+| Projector / screen for demos | Classroom | All sessions |
 
 ## Session Timing
 

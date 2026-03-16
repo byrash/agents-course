@@ -1,164 +1,276 @@
-# ZeroClaw Course — Docker Image
+# AI Agents Course — ZeroClaw on Hetzner Cloud
 
-Source files for building and publishing the ZeroClaw agent Docker image used in the AI course.
+Infrastructure-as-code setup for deploying personal AI agents (ZeroClaw) for students on Hetzner Cloud using OpenTofu. Each student gets their own $4/month cloud server with ZeroClaw running bare-metal (no Docker overhead).
 
-## Building and Publishing
+## How It Works
+
+1. **Parent** creates a [Hetzner Cloud](https://console.hetzner.cloud) account (~$4/month)
+2. **Parent** generates an API token and shares it with the instructor
+3. **Instructor** runs one command to deploy the student's server
+4. **Student** talks to their AI agent on Telegram and customizes it
+
+## Prerequisites (Instructor)
+
+- [OpenTofu](https://opentofu.org/docs/intro/install/) installed (`brew install opentofu` on macOS)
+- An SSH key pair for remote access to student servers
+
+## Quick Start
+
+### 1. Initialize OpenTofu
 
 ```bash
-# Build
-docker build -t byrash/agents-course:latest .
-
-# Push to Docker Hub
-docker login
-docker push byrash/agents-course:latest
+cd infra
+tofu init
 ```
 
-For multi-platform (students on Mac ARM + Linux VPS):
+### 2. Create a Student Config
 
 ```bash
-docker buildx create --use
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t byrash/agents-course:latest --push .
+cp students/example.tfvars students/alice.tfvars
 ```
 
-## What's in the Image
+Edit `students/alice.tfvars`:
 
-- ZeroClaw v0.3.0 (prebuilt binary)
+```hcl
+hcloud_token       = "hc_API_TOKEN_FROM_PARENT"
+student_name       = "alice"
+telegram_bot_token = "123456789:ABCdef..."
+telegram_user_id   = "987654321"
+
+# OpenRouter is cheapest — see "Choosing an LLM Provider" below
+llm_provider       = "openrouter"
+llm_model          = "openai/gpt-4o"
+openrouter_api_key = "sk-or-v1-..."
+
+server_type = "cax11"   # ARM 2vCPU/4GB — $4/mo
+location    = "ash"     # Ashburn, Virginia
+
+instructor_ssh_public_key = "ssh-ed25519 AAAA..."
+```
+
+### 3. Deploy
+
+```bash
+./scripts/deploy-student.sh students/alice.tfvars
+```
+
+In ~4 minutes the server is live. The script prints the IP, dashboard URL, and SSH commands.
+
+### 4. Verify
+
+```bash
+ssh root@<SERVER_IP> 'tail -f /var/log/cloud-init-output.log'
+```
+
+Wait until you see `Cloud-init finished`. Then check:
+
+```bash
+ssh root@<SERVER_IP> 'systemctl status zeroclaw'
+```
+
+The student can now open Telegram and message their bot.
+
+## Managing Students
+
+```bash
+# List all deployed student servers
+./scripts/list-students.sh
+
+# Destroy a student's server
+./scripts/teardown-student.sh alice students/alice.tfvars
+```
+
+## What Gets Deployed
+
+Each student server (Ubuntu 24.04) is provisioned automatically via cloud-init:
+
+- ZeroClaw v0.3.0 binary (auto-detects ARM/x86)
 - Node.js 22 + agent-browser + Playwright + Chromium
-- Xvfb virtual framebuffer for headless browser automation
-- Config auto-generated from environment variables on first run
-- Default workspace files copied into mounted volume on first run
+- Xvfb virtual framebuffer for headless browser
+- systemd service that starts ZeroClaw on boot
+- Firewall allowing only SSH (22) and dashboard (42617)
+- Config generated from the student's credentials
+- Default workspace files for agent personality
 
-## Environment Variables
+## Choosing an LLM Provider
+
+Your agent needs a "brain" — a large language model. Three options, ranked by cost:
+
+### Option A: OpenRouter (Recommended)
+
+The cheapest and most flexible option. One API key gives access to 300+ models. Comes with **$1 free credit** on signup — enough for hundreds of messages.
+
+| Model | Input / Output per 1M tokens | Best For |
+|-------|------------------------------|----------|
+| `deepseek/deepseek-chat` | $0.32 / $0.89 | Cheapest capable model |
+| `google/gemini-2.5-flash` | $0.30 / $2.50 | Fast and cheap |
+| `openai/gpt-4o` | $2.50 / $10.00 | Best quality |
+
+**Estimated cost:** A student sending ~50 messages/day uses roughly $0.50–2.00/month with `deepseek/deepseek-chat` or `google/gemini-2.5-flash`.
+
+**Setup:**
+1. Go to [openrouter.ai](https://openrouter.ai) and sign up (Google/GitHub login works)
+2. Go to [Keys](https://openrouter.ai/settings/keys) → **Create Key** → copy it (starts with `sk-or-v1-`)
+3. Optionally add $5 credit under [Credits](https://openrouter.ai/settings/credits) (the $1 free is enough to start)
+
+**In the student's `.tfvars`:**
+```hcl
+llm_provider       = "openrouter"
+llm_model          = "openai/gpt-4o"        # or deepseek/deepseek-chat, google/gemini-2.5-flash
+openrouter_api_key = "sk-or-v1-..."
+```
+
+### Option B: OpenAI Direct
+
+Better if the parent/student already has an OpenAI account. Slightly more expensive but the most mature API.
+
+| Model | Input / Output per 1M tokens |
+|-------|------------------------------|
+| `gpt-4o` | $2.50 / $10.00 |
+| `gpt-4o-mini` | $0.15 / $0.60 |
+
+**Setup:**
+1. Go to [platform.openai.com](https://platform.openai.com) and sign up or log in
+2. Go to **API Keys** → **Create new secret key** → copy it (starts with `sk-`)
+3. Go to **Settings → Limits** → set a **monthly spending limit of $5–10**
+4. Add $5–10 in **Billing → Add payment method**
+
+**In the student's `.tfvars`:**
+```hcl
+llm_provider   = "openai"
+llm_model      = "gpt-4o"                   # or gpt-4o-mini for cheaper
+openai_api_key = "sk-..."
+```
+
+### Option C: GitHub Copilot
+
+Free for students with [GitHub Education](https://education.github.com/pack), but requires an OAuth flow after the server is deployed.
+
+**Setup:**
+1. Student signs up for [GitHub Education](https://education.github.com/pack) (free with a school email)
+2. Deploy the server with `llm_provider = "copilot"` and both API keys empty
+3. After deploy, SSH in and run the OAuth flow:
+   ```bash
+   ssh zeroclaw@SERVER_IP
+   zeroclaw auth login copilot
+   ```
+4. Follow the URL, enter the device code, authorize
+5. Restart: `sudo systemctl restart zeroclaw`
+
+### LLM Cost Summary
+
+| Provider | Cheapest Model | ~Cost for 50 msgs/day | Setup Difficulty |
+|----------|---------------|----------------------|-----------------|
+| **OpenRouter** | deepseek-chat | ~$0.50–1/mo | Easy (1 key) |
+| **OpenAI** | gpt-4o-mini | ~$1–2/mo | Medium (key + billing) |
+| **GitHub Copilot** | gpt-4o | Free (students) | Harder (OAuth flow) |
+
+## Variables Reference
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `TELEGRAM_BOT_TOKEN` | Yes | — | Bot token from @BotFather |
-| `TELEGRAM_USER_ID` | Yes | — | Your numeric user ID from @userinfobot |
-| `OPENAI_API_KEY` | Yes (for OpenAI) | — | API key from platform.openai.com |
-| `LLM_PROVIDER` | No | `openai` | `openai` or `copilot` |
-| `LLM_MODEL` | No | `gpt-4o` | Model name |
+| `hcloud_token` | Yes | — | Hetzner API token (from parent) |
+| `student_name` | Yes | — | Lowercase name, no spaces |
+| `telegram_bot_token` | Yes | — | From @BotFather on Telegram |
+| `telegram_user_id` | Yes | — | From @userinfobot on Telegram |
+| `llm_provider` | No | `openai` | `openai`, `openrouter`, or `copilot` |
+| `llm_model` | No | `gpt-4o` | Model name (provider-specific) |
+| `openai_api_key` | For OpenAI | `""` | From platform.openai.com |
+| `openrouter_api_key` | For OpenRouter | `""` | From openrouter.ai |
+| `server_type` | No | `cax11` | Hetzner server type |
+| `location` | No | `ash` | Hetzner data center |
 
 ## File Structure
 
 ```
-├── Dockerfile              # Image definition
-├── entrypoint.sh           # Config generation + daemon startup
-├── config.template.toml    # ZeroClaw config with env var placeholders
-├── .env.example            # Template for testing locally
-├── .dockerignore
-└── workspace-defaults/     # Copied into workspace volume on first run
-    ├── AGENTS.md
-    ├── SOUL.md
-    ├── TOOLS.md
-    ├── IDENTITY.md
-    └── USER.md
+infra/
+├── providers.tf              # Hetzner Cloud provider
+├── variables.tf              # All input variables
+├── main.tf                   # Server, firewall, SSH key
+├── outputs.tf                # IP, dashboard URL, SSH commands
+├── cloud-init.yaml.tpl       # Bare-metal setup script
+├── scripts/
+│   ├── deploy-student.sh     # Deploy one student
+│   ├── teardown-student.sh   # Destroy one student's server
+│   └── list-students.sh      # Show all deployed students
+└── students/
+    └── example.tfvars        # Copy per student
 ```
 
+## Server Costs
+
+| Server Type | Specs | Monthly Cost | Notes |
+|-------------|-------|-------------|-------|
+| `cax11` (ARM) | 2 vCPU, 4GB RAM, 40GB SSD | ~$4/mo | Recommended |
+| `cpx11` (x86) | 2 vCPU, 2GB RAM, 40GB SSD | ~$4.50/mo | If ARM causes issues |
+
+10 students = ~$40/month total.
+
+## Student Instructions
+
+**Share everything below this line with students.**
+
 ---
 
-# Student Instructions
+### Set Up Your AI Agent
 
-**Everything below this line is what you share with students.**
+You'll get a personal AI agent that lives on a cloud server and talks to you on Telegram. It can search the web, browse websites, and remember things.
 
----
-
-## Set Up Your Own AI Agent
-
-You'll build a personal AI agent that you can talk to on Telegram. It can search the web, browse websites, and remember things across conversations.
-
-### What You Need
-
-- **Docker Desktop** — [mac](https://docs.docker.com/desktop/setup/install/mac-install/) · [windows](https://docs.docker.com/desktop/setup/install/windows-install/) · [linux](https://docs.docker.com/desktop/setup/install/linux/)
-- **Telegram** on your phone or computer
-- **OpenAI API key** (your instructor will help you with this)
-
-### 1. Create a Telegram Bot
+#### 1. Create a Telegram Bot
 
 1. Open Telegram and search for **@BotFather**
 2. Send `/newbot`
 3. Pick a display name (anything you like)
 4. Pick a username (must end in `bot`, e.g. `my_helper_bot`)
-5. BotFather replies with a **bot token** — save it
+5. BotFather replies with a **bot token** — send it to your instructor
 
-### 2. Get Your Telegram User ID
+#### 2. Get Your Telegram User ID
 
 1. Search for **@userinfobot** on Telegram
 2. Send it any message
-3. It replies with your **user ID** (a number like `123456789`) — save it
+3. It replies with your **user ID** (a number like `123456789`) — send it to your instructor
 
-### 3. Get an OpenAI API Key
+#### 3. Get an LLM API Key
 
-1. Go to [platform.openai.com](https://platform.openai.com) and sign up or log in
-2. Navigate to API Keys and create a new key
+Your agent needs access to an AI model. Your instructor will tell you which option to use.
+
+**Option A — OpenRouter (cheapest):**
+1. Go to [openrouter.ai](https://openrouter.ai) and sign up (Google or GitHub login)
+2. You get **$1 free credit** immediately
+3. Go to [Keys](https://openrouter.ai/settings/keys) → **Create Key**
+4. Send the key to your instructor (starts with `sk-or-v1-`)
+
+**Option B — OpenAI:**
+1. Go to [platform.openai.com](https://platform.openai.com) and sign up
+2. Go to **API Keys** → **Create new secret key**
 3. Set a **monthly spending limit** of $5–10 under Settings → Limits
-4. Save the key (starts with `sk-`)
+4. Send the key to your instructor (starts with `sk-`)
 
-### 4. Create a Project Folder
+**Option C — GitHub Copilot (free for students):**
+1. Sign up for [GitHub Education](https://education.github.com/pack) with your school email
+2. Tell your instructor you're using Copilot — no key needed upfront
+3. After your server is set up, you'll authorize via a link
 
-**Mac / Linux** — open Terminal:
+#### 4. Wait for Deployment
 
-```bash
-mkdir zeroclaw && cd zeroclaw
-mkdir -p workspace memory
-```
+Your instructor will set up your server. Once it's ready, you'll get:
+- Confirmation that your bot is live
+- Your server's IP address (for the web dashboard)
 
-**Windows** — open PowerShell:
+#### 5. Talk to Your Agent
 
-```powershell
-mkdir zeroclaw; cd zeroclaw
-mkdir workspace, memory
-```
+Open Telegram, find your bot by its username, and send it a message!
 
-### 5. Create Your Config File
-
-Create a file called `.env` in your `zeroclaw` folder with this content, filling in your three values:
-
-```
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_USER_ID=your_user_id_here
-OPENAI_API_KEY=sk-your-key-here
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o
-```
-
-### 6. Start Your Agent
-
-**Mac / Linux:**
-
-```bash
-docker run -d \
-  --name agents-course \
-  --env-file .env \
-  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace \
-  -v ./memory:/home/zeroclaw/.zeroclaw/memory \
-  -p 42617:42617 \
-  --restart unless-stopped \
-  byrash/agents-course:latest
-```
-
-**Windows PowerShell:**
-
-```powershell
-docker run -d `
-  --name agents-course `
-  --env-file .env `
-  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace `
-  -v ./memory:/home/zeroclaw/.zeroclaw/memory `
-  -p 42617:42617 `
-  --restart unless-stopped `
-  byrash/agents-course:latest
-```
-
-### 7. Talk to Your Agent
-
-Open Telegram, find your bot by its username, and send it a message.
-
-The web dashboard is at [http://localhost:42617](http://localhost:42617).
+The web dashboard is at `http://YOUR_SERVER_IP:42617`.
 
 ### Customizing Your Agent
 
-The `workspace/` folder contains files that control your agent's behavior. Open them in any text editor.
+SSH into your server to edit the workspace files:
+
+```bash
+ssh zeroclaw@YOUR_SERVER_IP
+cd ~/.zeroclaw/workspace
+```
 
 | File | What it controls |
 |------|-----------------|
@@ -171,122 +283,46 @@ The `workspace/` folder contains files that control your agent's behavior. Open 
 After editing, restart to apply:
 
 ```bash
-docker restart agents-course
+sudo systemctl restart zeroclaw
 ```
 
 ### Useful Commands
 
 ```bash
-docker ps                      # Is it running?
-docker logs -f agents-course        # View live logs
-docker stop agents-course           # Stop the agent
-docker start agents-course          # Start it again
-docker restart agents-course        # Restart after editing workspace files
-docker rm -f agents-course          # Remove completely
+sudo systemctl status zeroclaw        # Is it running?
+sudo journalctl -u zeroclaw -f        # View live logs
+sudo systemctl restart zeroclaw       # Restart after editing
+sudo systemctl stop zeroclaw          # Stop the agent
+sudo systemctl start zeroclaw         # Start it again
 ```
 
 ### Troubleshooting
 
 **Bot doesn't respond on Telegram**
-- Check logs: `docker logs agents-course`
+- Check logs: `sudo journalctl -u zeroclaw --no-pager -n 50`
 - Make sure you sent `/start` to your bot at least once
-- Verify `TELEGRAM_BOT_TOKEN` in your `.env` file
+- Ask your instructor to verify the bot token
 
-**Container stops immediately**
-- Run `docker logs agents-course` to see the error
-- Usually a missing or empty value in `.env`
+**Agent crashes or restarts**
+- Check the service: `sudo systemctl status zeroclaw`
+- View recent logs: `sudo journalctl -u zeroclaw --no-pager -n 100`
 
-**OpenAI errors**
-- Verify `OPENAI_API_KEY` in `.env`
-- Check you have credits at [platform.openai.com](https://platform.openai.com)
+**LLM / API key errors**
+- Ask your instructor to verify your API key
+- OpenAI: check credits at [platform.openai.com](https://platform.openai.com)
+- OpenRouter: check credits at [openrouter.ai/settings/credits](https://openrouter.ai/settings/credits)
 
-**Start fresh**
+### Using GitHub Copilot Instead of OpenAI
 
-Mac / Linux:
-
-```bash
-docker rm -f agents-course
-rm -rf workspace memory
-mkdir -p workspace memory
-docker run -d \
-  --name agents-course \
-  --env-file .env \
-  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace \
-  -v ./memory:/home/zeroclaw/.zeroclaw/memory \
-  -p 42617:42617 \
-  --restart unless-stopped \
-  byrash/agents-course:latest
-```
-
-Windows PowerShell:
-
-```powershell
-docker rm -f agents-course
-Remove-Item -Recurse -Force workspace, memory
-mkdir workspace, memory
-docker run -d `
-  --name agents-course `
-  --env-file .env `
-  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace `
-  -v ./memory:/home/zeroclaw/.zeroclaw/memory `
-  -p 42617:42617 `
-  --restart unless-stopped `
-  byrash/agents-course:latest
-```
-
----
-
-## Local Testing with GitHub Copilot
-
-To test the image locally using GitHub Copilot as the LLM provider instead of OpenAI.
-
-### 1. Authorize Copilot
-
-If you have a token from another machine, copy it:
+If your instructor set up Copilot as the LLM provider, you'll need to authorize it once:
 
 ```bash
-mkdir -p copilot-tokens/copilot
-echo -n "YOUR_ACCESS_TOKEN" > copilot-tokens/copilot/access-token
-chmod 600 copilot-tokens/copilot/access-token
+ssh zeroclaw@YOUR_SERVER_IP
+zeroclaw auth login copilot
 ```
 
-If you don't have a token, start the container first (steps 2–3), then run the OAuth flow inside it:
+Follow the URL shown and enter the device code to authorize. Then restart:
 
 ```bash
-docker exec -it agents-course zeroclaw auth login copilot
+sudo systemctl restart zeroclaw
 ```
-
-Follow the URL and enter the code to authorize.
-
-### 2. Create `.env`
-
-```
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_USER_ID=your_user_id
-LLM_PROVIDER=copilot
-LLM_MODEL=gpt-5.2
-```
-
-### 3. Run
-
-```bash
-mkdir -p workspace memory copilot-tokens/copilot
-
-docker run -d \
-  --name agents-course \
-  --env-file .env \
-  -v ./workspace:/home/zeroclaw/.zeroclaw/workspace \
-  -v ./memory:/home/zeroclaw/.zeroclaw/memory \
-  -v ./copilot-tokens:/home/zeroclaw/.config/zeroclaw \
-  -p 42617:42617 \
-  --restart unless-stopped \
-  byrash/agents-course:latest
-```
-
-### 4. Verify
-
-```bash
-docker logs -f agents-course
-```
-
-Look for `Warming up provider connection pool provider="copilot"` without a failure message.
