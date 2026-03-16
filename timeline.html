@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Course — Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --ink2: #475569;
+  --muted: #94a3b8;
+  --line: #cbd5e1;
+  --purple: #7c3aed;
+  --purple-bg: #ede9fe;
+  --blue: #2563eb;
+  --blue-bg: #dbeafe;
+  --teal: #0d9488;
+  --teal-bg: #ccfbf1;
+  --orange: #ea580c;
+  --orange-bg: #ffedd5;
+  --green: #059669;
+  --green-bg: #d1fae5;
+  --rose: #e11d48;
+  --rose-bg: #ffe4e6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  padding:48px 24px 80px;
+  -webkit-font-smoothing:antialiased;
+}
+@media print{
+  body{background:#fff;padding:20px}
+  .phase{break-inside:avoid}
+  .card{box-shadow:none!important;border:1px solid #e2e8f0}
+}
+
+.wrap{max-width:960px;margin:0 auto}
+
+/* ── Header ── */
+.hero{text-align:center;margin-bottom:56px}
+.hero h1{
+  font-family:'JetBrains Mono',monospace;
+  font-size:2.6rem;
+  letter-spacing:-1.5px;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.hero p{font-size:1.05rem;color:var(--ink2)}
+.hero .pills{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+.hero .pill{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.8px;
+  padding:5px 14px;
+  border-radius:100px;
+  background:var(--blue-bg);
+  color:var(--blue);
+}
+
+/* ── Phase ── */
+.phase{margin-bottom:52px}
+.phase-head{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:24px;flex-wrap:wrap;
+}
+.phase-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;
+  padding:5px 14px;border-radius:100px;color:#fff;
+}
+.phase-badge.pre{background:var(--purple)}
+.phase-badge.course{background:var(--blue)}
+.phase-badge.post{background:var(--green)}
+.phase-name{font-size:1.35rem;font-weight:700}
+.phase-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;color:var(--muted);
+  margin-left:auto;
+}
+
+/* ── Timeline ── */
+.tl{position:relative;padding-left:44px}
+.tl::before{
+  content:'';position:absolute;left:16px;top:0;bottom:0;
+  width:3px;border-radius:3px;
+  background:linear-gradient(to bottom,var(--purple),var(--blue),var(--green));
+}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-item .dot{
+  position:absolute;left:-36px;top:20px;
+  width:17px;height:17px;border-radius:50%;
+  border:3px solid var(--bg);z-index:2;
+}
+@media print{.tl-item .dot{border-color:#fff}}
+
+/* ── Card ── */
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:20px 24px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.03);
+  transition:transform .15s,box-shadow .15s;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.09)}
+.card-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.who{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.4px;
+  padding:3px 10px;border-radius:6px;
+}
+.who-parent{background:#fef3c7;color:#92400e}
+.who-student{background:var(--blue-bg);color:#1e40af}
+.who-instructor{background:var(--purple-bg);color:#5b21b6}
+.who-class{background:var(--green-bg);color:#065f46}
+.card-time{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;color:var(--muted);
+  margin-left:auto;
+}
+.card h3{font-size:1.08rem;font-weight:700;margin-bottom:4px}
+.card p{font-size:.9rem;color:var(--ink2);line-height:1.55}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem;
+  padding:3px 9px;border-radius:5px;
+  background:var(--bg);color:var(--ink2);
+}
+
+/* ── Session accent stripe ── */
+.card.accent-orange{border-left:3px solid var(--orange)}
+.card.accent-teal{border-left:3px solid var(--teal)}
+.card.accent-green{border-left:3px solid var(--green)}
+.card.accent-rose{border-left:3px solid var(--rose)}
+
+/* ── Cost bar ── */
+.cost-bar{
+  background:var(--card);border-radius:14px;
+  padding:22px 30px;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+  border-left:4px solid var(--green);
+  display:flex;align-items:center;gap:32px;
+  margin-top:44px;flex-wrap:wrap;
+}
+.cost-bar h3{font-size:1rem;white-space:nowrap}
+.costs{display:flex;gap:36px;flex-wrap:wrap}
+.cost .amt{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.35rem;font-weight:700;color:var(--green);
+}
+.cost .lbl{font-size:.76rem;color:var(--muted)}
+.cost .total .amt{color:var(--ink);font-size:1.5rem}
+
+/* ── Footer ── */
+.foot{text-align:center;margin-top:48px;color:var(--muted);font-size:.82rem}
+
+/* ── Anim ── */
+.tl-item{opacity:0;transform:translateY(16px);animation:rise .45s ease forwards}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.tl-item:nth-child(1){animation-delay:.05s}
+.tl-item:nth-child(2){animation-delay:.10s}
+.tl-item:nth-child(3){animation-delay:.15s}
+.tl-item:nth-child(4){animation-delay:.20s}
+.tl-item:nth-child(5){animation-delay:.25s}
+.tl-item:nth-child(6){animation-delay:.30s}
+.tl-item:nth-child(7){animation-delay:.35s}
+.tl-item:nth-child(8){animation-delay:.40s}
+.tl-item:nth-child(9){animation-delay:.45s}
+.tl-item:nth-child(10){animation-delay:.50s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>AI Agents Course</h1>
+    <p>High school students go from zero to building their own AI agent</p>
+    <div class="pills">
+      <span class="pill">8 Sessions</span>
+      <span class="pill">60 min each</span>
+      <span class="pill">No coding</span>
+      <span class="pill">~$5/mo per student</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PRE-COURSE ═══════════════ -->
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-badge pre">Pre-Course</span>
+      <span class="phase-name">Before Session 1</span>
+      <span class="phase-meta">~20 min one-time setup</span>
+    </div>
+    <div class="tl">
+
+      <div class="tl-item">
+        <div class="dot" style="background:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-instructor">Instructor</span>
+            <span class="card-time">once</span>
+          </div>
+          <h3>Share Parent Setup Guide</h3>
+          <p>Send the 11-slide <strong>Parent_Setup_Guide.pptx</strong> with step-by-step account creation instructions and all links.</p>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="dot" style="background:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-parent">Parent</span>
+            <span class="card-time">~5 min</span>
+          </div>
+          <h3>Create Hetzner Cloud Account</h3>
+          <p>Sign up at <strong>console.hetzner.cloud</strong>. Generate a read/write API token. Send it to the instructor.</p>
+          <div class="tags"><span class="tag">~$4/mo</span><span class="tag">credit card required</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="dot" style="background:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-parent">Parent</span>
+            <span class="card-time">~5 min</span>
+          </div>
+          <h3>Create OpenRouter Account</h3>
+          <p>Sign up at <strong>openrouter.ai</strong>. Create an API key with a $5 spending limit. Send it to the instructor.</p>
+          <div class="tags"><span class="tag">$1 free credit</span><span class="tag">~$1-2/mo after</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="dot" style="background:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-student">Student</span>
+            <span class="card-time">~5 min</span>
+          </div>
+          <h3>Install Telegram + VS Code &amp; Create Bot</h3>
+          <p>Download Telegram on phone, install VS Code on laptop. Create a bot via <strong>@BotFather</strong>, get user ID from <strong>@userinfobot</strong>. Send both to instructor.</p>
+          <div class="tags"><span class="tag">free</span><span class="tag">Windows / macOS / Linux</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="dot" style="background:var(--purple);box-shadow:0 0 0 3px var(--purple-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-instructor">Instructor</span>
+            <span class="card-time">~5 min per student</span>
+          </div>
+          <h3>Deploy Student Servers</h3>
+          <p>Run <code>deploy-student.sh</code> per student. OpenTofu provisions a Hetzner ARM server, installs ZeroClaw, generates SSH keys — live in ~4 minutes.</p>
+          <div class="tags"><span class="tag">OpenTofu</span><span class="tag">bare-metal</span><span class="tag">auto SSH keys</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ COURSE ═══════════════ -->
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-badge course">Course</span>
+      <span class="phase-name">8 Sessions</span>
+      <span class="phase-meta">60 min each</span>
+    </div>
+    <div class="tl">
+
+      <!-- S1 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-class">Session 1</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>What is AI?</h3>
+          <p>Demystify AI — narrow vs general, AI they already use (Spotify, TikTok, Maps). Hands-on: prompt ChatGPT in different ways and see how the prompt controls the output.</p>
+          <div class="tags"><span class="tag">lecture</span><span class="tag">ChatGPT demo</span><span class="tag">prompts</span></div>
+        </div>
+      </div>
+
+      <!-- S2 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-class">Session 2</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>How LLMs Work</h3>
+          <p>Tokens, prompts, completions, and the temperature dial. Challenge: write 3 prompts for the same question — plain, persona-based, and style-constrained — then compare.</p>
+          <div class="tags"><span class="tag">tokens</span><span class="tag">temperature</span><span class="tag">prompt engineering</span></div>
+        </div>
+      </div>
+
+      <!-- S3 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-class">Session 3</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>What Are AI Agents?</h3>
+          <p>Chatbot vs agent. The agent loop: Think &rarr; Act &rarr; Observe &rarr; Repeat. Live demo of instructor's agent on Telegram doing real searches and remembering things.</p>
+          <div class="tags"><span class="tag">agent loop</span><span class="tag">tools</span><span class="tag">live demo</span></div>
+        </div>
+      </div>
+
+      <!-- S4 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--orange);box-shadow:0 0 0 3px var(--orange-bg)"></div>
+        <div class="card accent-orange">
+          <div class="card-row">
+            <span class="who who-class">Session 4</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>Setup Day</h3>
+          <p>Students get their SSH keys, set up VS Code Remote SSH, connect to their cloud server, send their first message to their agent, and make their first edit.</p>
+          <div class="tags"><span class="tag">SSH key setup</span><span class="tag">VS Code Remote</span><span class="tag">first message!</span></div>
+        </div>
+      </div>
+
+      <!-- S5 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-class">Session 5</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>How Your Agent Works</h3>
+          <p>Workspace files = agent DNA. Edit SOUL.md to give it a pirate personality. Add rules in AGENTS.md. Experience the edit &rarr; restart &rarr; test loop.</p>
+          <div class="tags"><span class="tag">SOUL.md</span><span class="tag">AGENTS.md</span><span class="tag">personality</span></div>
+        </div>
+      </div>
+
+      <!-- S6 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--blue);box-shadow:0 0 0 3px var(--blue-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-class">Session 6</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>Tools &amp; Capabilities</h3>
+          <p>Web search, browser, and memory — what each does and when the agent uses it. Tool testing challenge: send specific messages and watch which tools fire.</p>
+          <div class="tags"><span class="tag">web search</span><span class="tag">browser</span><span class="tag">memory</span></div>
+        </div>
+      </div>
+
+      <!-- S7 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--teal);box-shadow:0 0 0 3px var(--teal-bg)"></div>
+        <div class="card accent-teal">
+          <div class="card-row">
+            <span class="who who-class">Session 7</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>Build Your Agent</h3>
+          <p>Pick a problem you care about. Design personality, rules, and identity. Build in VS Code, test on Telegram, iterate. Homework: keep refining before Demo Day.</p>
+          <div class="tags"><span class="tag">design</span><span class="tag">build</span><span class="tag">iterate</span></div>
+        </div>
+      </div>
+
+      <!-- S8 -->
+      <div class="tl-item">
+        <div class="dot" style="background:var(--green);box-shadow:0 0 0 3px var(--green-bg)"></div>
+        <div class="card accent-green">
+          <div class="card-row">
+            <span class="who who-class">Session 8</span>
+            <span class="card-time">60 min</span>
+          </div>
+          <h3>Demo Day!</h3>
+          <p>5-minute presentations per student — live demo on Telegram. Class votes on most creative agent. Recap everything learned and discuss what's next.</p>
+          <div class="tags"><span class="tag">presentations</span><span class="tag">celebration</span><span class="tag">what's next</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ POST-COURSE ═══════════════ -->
+  <div class="phase">
+    <div class="phase-head">
+      <span class="phase-badge post">Post-Course</span>
+      <span class="phase-name">After Session 8</span>
+    </div>
+    <div class="tl">
+      <div class="tl-item">
+        <div class="dot" style="background:var(--green);box-shadow:0 0 0 3px var(--green-bg)"></div>
+        <div class="card">
+          <div class="card-row">
+            <span class="who who-instructor">Instructor</span>
+            <span class="card-time">~2 min per student</span>
+          </div>
+          <h3>Tear Down Servers</h3>
+          <p>Run <code>teardown-student.sh</code> to destroy each student's server. Billing stops immediately. Or keep them running if students want to continue.</p>
+          <div class="tags"><span class="tag">OpenTofu destroy</span><span class="tag">billing stops</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ COST BAR ═══════════════ -->
+  <div class="cost-bar">
+    <h3>Monthly Cost Per Student</h3>
+    <div class="costs">
+      <div class="cost">
+        <div class="amt">~$4</div>
+        <div class="lbl">Hetzner server</div>
+      </div>
+      <div class="cost">
+        <div class="amt">~$1</div>
+        <div class="lbl">OpenRouter LLM</div>
+      </div>
+      <div class="cost">
+        <div class="amt">$0</div>
+        <div class="lbl">VS Code + Telegram</div>
+      </div>
+      <div class="cost total">
+        <div class="amt" style="color:var(--ink);font-size:1.5rem">~$5/mo</div>
+        <div class="lbl">total per student</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">AI Agents Course &middot; 8 sessions &middot; ~$5/student/month &middot; No coding required</div>
+
+</div>
+</body>
+</html>
