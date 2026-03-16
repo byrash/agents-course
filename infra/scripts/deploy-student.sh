@@ -21,7 +21,7 @@ The .tfvars file must contain at minimum:
   telegram_user_id   = "987654321"
 
 Optional variables (have defaults):
-  llm_provider, llm_model, openai_api_key,
+  llm_provider, llm_model, openai_api_key, openrouter_api_key,
   server_type, location, instructor_ssh_public_key
 USAGE
     exit 1
@@ -67,14 +67,72 @@ fi
 tofu apply "$STUDENT_NAME.tfplan"
 rm -f "$STUDENT_NAME.tfplan"
 
-echo ""
-echo "============================================"
-echo "  Deployed for: $STUDENT_NAME"
-echo "  Server IP:    $(tofu output -raw server_ip)"
-echo "  Dashboard:    $(tofu output -raw dashboard_url)"
-echo "  SSH (root):   $(tofu output -raw ssh_command)"
-echo "  SSH (agent):  $(tofu output -raw ssh_zeroclaw)"
-echo "============================================"
-echo ""
-echo "Cloud-init takes 3-5 minutes to finish setup."
-echo "Check progress: ssh root@$(tofu output -raw server_ip) 'tail -f /var/log/cloud-init-output.log'"
+SERVER_IP=$(tofu output -raw server_ip)
+KEY_DIR="$INFRA_DIR/students/$STUDENT_NAME"
+KEY_FILE="$KEY_DIR/id_ed25519"
+CONFIG_FILE="$KEY_DIR/ssh_config"
+
+mkdir -p "$KEY_DIR"
+
+tofu output -raw student_private_key > "$KEY_FILE"
+chmod 600 "$KEY_FILE"
+
+tofu output -raw student_ssh_config > "$CONFIG_FILE"
+
+cat <<EOF
+
+============================================
+  Deployed for: $STUDENT_NAME
+  Server IP:    $SERVER_IP
+  Dashboard:    http://$SERVER_IP:42617
+============================================
+
+  SSH key saved:   $KEY_FILE
+  SSH config saved: $CONFIG_FILE
+
+  Cloud-init takes 3-5 minutes to finish.
+  Monitor: ssh -i $KEY_FILE zeroclaw@$SERVER_IP 'tail -f /var/log/cloud-init-output.log'
+
+============================================
+  GIVE THESE TO THE STUDENT:
+============================================
+
+  1. Key file:   $KEY_FILE
+  2. Server IP:  $SERVER_IP
+  3. Host alias: zc-$STUDENT_NAME
+
+  --- Student setup (macOS / Linux) ---
+
+  cp <path-to-key>/id_ed25519 ~/.ssh/zc-$STUDENT_NAME
+  chmod 600 ~/.ssh/zc-$STUDENT_NAME
+  cat >> ~/.ssh/config << 'SSHEOF'
+
+  Host zc-$STUDENT_NAME
+    HostName $SERVER_IP
+    User zeroclaw
+    IdentityFile ~/.ssh/zc-$STUDENT_NAME
+    StrictHostKeyChecking no
+  SSHEOF
+
+  --- Student setup (Windows PowerShell) ---
+
+  Copy-Item <path-to-key>\id_ed25519 \$env:USERPROFILE\.ssh\zc-$STUDENT_NAME
+  icacls \$env:USERPROFILE\.ssh\zc-$STUDENT_NAME /inheritance:r /grant:r "\$(\$env:USERNAME):R"
+  Add-Content \$env:USERPROFILE\.ssh\config @"
+
+  Host zc-$STUDENT_NAME
+    HostName $SERVER_IP
+    User zeroclaw
+    IdentityFile ~/.ssh/zc-$STUDENT_NAME
+    StrictHostKeyChecking no
+  "@
+
+  --- VS Code Remote SSH ---
+
+  1. Install VS Code extension: "Remote - SSH"
+  2. Cmd+Shift+P (or Ctrl+Shift+P) -> "Remote-SSH: Connect to Host"
+  3. Select "zc-$STUDENT_NAME"
+  4. Open folder: ~/.zeroclaw/workspace/
+
+============================================
+EOF

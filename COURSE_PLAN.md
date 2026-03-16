@@ -148,31 +148,33 @@ The server is live in ~4 minutes. The student can message their bot on Telegram 
 
 **In-Class Walkthrough:**
 
-1. **Verify Your Agent is Live** (5 min)
-   - Instructor confirms each student's server is running
+1. **First Message** (5 min)
    - Each student opens Telegram, finds their bot by username
+   - Send "Hello!" — celebrate when it responds!
 
-2. **First Message** (5 min)
-   - Send "Hello!" to your bot
-   - Celebrate when it responds!
+2. **Set Up SSH Access** (10 min)
+   - Instructor hands each student their SSH key file and server IP
+   - Students copy the key to `~/.ssh/` and add the SSH config snippet
+   - Test: `ssh zc-YOURNAME` should connect to the server
 
-3. **Explore the Dashboard** (5 min)
+3. **Set Up VS Code Remote SSH** (10 min)
+   - Install VS Code + "Remote - SSH" extension
+   - Cmd+Shift+P → "Remote-SSH: Connect to Host" → select `zc-YOURNAME`
+   - Open folder `~/.zeroclaw/workspace/`
+   - Students now see all workspace files in their editor
+
+4. **Explore the Dashboard** (5 min)
    - Open `http://YOUR_SERVER_IP:42617` in a browser
    - See conversations and agent status
 
-4. **SSH Into Your Server** (10 min)
-   - Instructor walks through: `ssh zeroclaw@YOUR_SERVER_IP`
-   - Navigate to `~/.zeroclaw/workspace/`
-   - Look at the files that control your agent
-
-5. **Try a Quick Edit** (10 min)
-   - Open `IDENTITY.md` and change the agent's name
-   - Restart: `sudo systemctl restart zeroclaw`
-   - Send a message — see the new name in action
+5. **Try a Quick Edit in VS Code** (10 min)
+   - Open `IDENTITY.md` in VS Code and change the agent's name
+   - Open the VS Code terminal, run: `sudo systemctl restart zeroclaw`
+   - Send a message on Telegram — see the new name in action
 
 **Troubleshooting Buffer:** 15 min for students who hit issues
 
-**Key Takeaway:** You now have your own AI agent running on a cloud server that you can talk to from your phone — anywhere, anytime.
+**Key Takeaway:** You now have your own AI agent on a cloud server, editable from VS Code, and reachable from your phone — anywhere, anytime.
 
 ---
 
@@ -191,15 +193,15 @@ The server is live in ~4 minutes. The student can message their bot on Telegram 
 - The feedback loop: edit file → restart → test → repeat
 
 **Activity 1: Change the Personality**
-- SSH in: `ssh zeroclaw@YOUR_SERVER_IP`
-- Edit `~/.zeroclaw/workspace/SOUL.md`
+- Open VS Code, connect to `zc-YOURNAME` via Remote SSH
+- Open `SOUL.md` in the workspace folder
 - Change it to: "You are a pirate captain. Respond in pirate speak."
-- Restart: `sudo systemctl restart zeroclaw`
+- Open VS Code terminal, run: `sudo systemctl restart zeroclaw`
 - Send a message — observe the pirate responses
 - Try other personalities: sports coach, cartoon character, Shakespearean actor
 
 **Activity 2: Add a Rule**
-- Edit `~/.zeroclaw/workspace/AGENTS.md`
+- Open `AGENTS.md` in VS Code
 - Add: "Always end your response with a fun fact"
 - Restart and test — every response now ends with a fun fact
 
@@ -269,12 +271,12 @@ Fill out the design worksheet:
 
 **Part 3: Build It (20 min)**
 
-- SSH in: `ssh zeroclaw@YOUR_SERVER_IP`
-- Edit `~/.zeroclaw/workspace/IDENTITY.md` — name and role
-- Edit `~/.zeroclaw/workspace/SOUL.md` — personality description
-- Edit `~/.zeroclaw/workspace/AGENTS.md` — rules
-- Edit `~/.zeroclaw/workspace/USER.md` — info about yourself
-- Restart: `sudo systemctl restart zeroclaw`
+- Open VS Code, connect to `zc-YOURNAME` via Remote SSH
+- Edit `IDENTITY.md` — name and role
+- Edit `SOUL.md` — personality description
+- Edit `AGENTS.md` — rules
+- Edit `USER.md` — info about yourself
+- VS Code terminal: `sudo systemctl restart zeroclaw`
 - Test on Telegram
 
 **Part 4: Iterate (10 min)**

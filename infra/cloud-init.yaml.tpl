@@ -33,6 +33,8 @@ users:
     groups: [sudo]
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: true
+    ssh_authorized_keys:
+      - ${trimspace(student_ssh_pubkey)}
 
 write_files:
   - path: /home/zeroclaw/.zeroclaw/config.toml

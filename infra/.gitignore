@@ -9,3 +9,6 @@ terraform.tfvars
 # Student configs contain API tokens and secrets
 students/*.tfvars
 !students/example.tfvars
+
+# Student SSH keys and deploy artifacts
+students/*/

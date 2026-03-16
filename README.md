@@ -54,7 +54,7 @@ instructor_ssh_public_key = "ssh-ed25519 AAAA..."
 ./scripts/deploy-student.sh students/alice.tfvars
 ```
 
-In ~4 minutes the server is live. The script prints the IP, dashboard URL, and SSH commands.
+In ~4 minutes the server is live. The script auto-generates an SSH key pair for the student, saves it to `students/<name>/id_ed25519`, and prints setup instructions.
 
 ### 4. Verify
 
@@ -254,23 +254,71 @@ Your agent needs access to an AI model. Your instructor will tell you which opti
 #### 4. Wait for Deployment
 
 Your instructor will set up your server. Once it's ready, you'll get:
-- Confirmation that your bot is live
-- Your server's IP address (for the web dashboard)
+- An SSH key file (`id_ed25519`)
+- Your server's IP address
+- An SSH config snippet
 
-#### 5. Talk to Your Agent
+#### 5. Set Up SSH Access
+
+Your instructor gives you a key file. Copy it and add the config:
+
+**macOS / Linux:**
+
+```bash
+cp ~/Downloads/id_ed25519 ~/.ssh/zc-YOURNAME
+chmod 600 ~/.ssh/zc-YOURNAME
+```
+
+Add this to `~/.ssh/config` (create the file if it doesn't exist):
+
+```
+Host zc-YOURNAME
+  HostName YOUR_SERVER_IP
+  User zeroclaw
+  IdentityFile ~/.ssh/zc-YOURNAME
+  StrictHostKeyChecking no
+```
+
+**Windows PowerShell:**
+
+```powershell
+Copy-Item ~\Downloads\id_ed25519 $env:USERPROFILE\.ssh\zc-YOURNAME
+icacls $env:USERPROFILE\.ssh\zc-YOURNAME /inheritance:r /grant:r "$($env:USERNAME):R"
+```
+
+Add this to `C:\Users\YOURNAME\.ssh\config` (create the file if it doesn't exist):
+
+```
+Host zc-YOURNAME
+  HostName YOUR_SERVER_IP
+  User zeroclaw
+  IdentityFile ~/.ssh/zc-YOURNAME
+  StrictHostKeyChecking no
+```
+
+Replace `YOURNAME` and `YOUR_SERVER_IP` with the values your instructor gives you.
+
+#### 6. Talk to Your Agent
 
 Open Telegram, find your bot by its username, and send it a message!
 
 The web dashboard is at `http://YOUR_SERVER_IP:42617`.
 
+### Editing with VS Code (Recommended)
+
+The easiest way to customize your agent is with VS Code connected directly to your server.
+
+1. Install [VS Code](https://code.visualstudio.com/)
+2. Install the **Remote - SSH** extension (search "Remote SSH" in the Extensions tab)
+3. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows) and type **Remote-SSH: Connect to Host**
+4. Select `zc-YOURNAME`
+5. VS Code opens on your server — click **Open Folder** and enter `~/.zeroclaw/workspace/`
+6. Edit any file, save, and restart from the VS Code terminal:
+   ```bash
+   sudo systemctl restart zeroclaw
+   ```
+
 ### Customizing Your Agent
-
-SSH into your server to edit the workspace files:
-
-```bash
-ssh zeroclaw@YOUR_SERVER_IP
-cd ~/.zeroclaw/workspace
-```
 
 | File | What it controls |
 |------|-----------------|
@@ -317,7 +365,7 @@ sudo systemctl start zeroclaw         # Start it again
 If your instructor set up Copilot as the LLM provider, you'll need to authorize it once:
 
 ```bash
-ssh zeroclaw@YOUR_SERVER_IP
+ssh zc-YOURNAME
 zeroclaw auth login copilot
 ```
 

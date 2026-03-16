@@ -131,7 +131,36 @@ def build_deck():
     ], size=22)
     img(s, "parent_deck_3steps.png", Inches(8), Inches(1.5), width=Inches(4.8))
 
-    # ── SLIDE 3: WHAT PARENTS NEED TO DO ──
+    # ── SLIDE 3: STUDENT MACHINE PREREQUISITES ──
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(s, BG_SOFT)
+    text(s, Inches(0.6), Inches(0.3), Inches(10), Inches(0.8),
+         "What Your Student Needs", size=36, bold=True)
+    accent_bar(s, Inches(0.6), Inches(1.1), Inches(2.5), ACCENT_TEAL)
+
+    bullets(s, Inches(0.6), Inches(1.5), Inches(6.8), Inches(5), [
+        "A laptop or desktop computer",
+        "      Windows 10/11, macOS, or Linux — any is fine",
+        "      Chromebook will NOT work",
+        "",
+        "VS Code (free code editor — install before class)",
+        "      Download at code.visualstudio.com",
+        "      Students will use this to edit their agent's files",
+        "",
+        "Telegram on their phone",
+        "      iOS or Android — free",
+        "",
+        "Stable internet connection",
+        "      Needed to connect to the cloud server",
+    ], size=21, spacing=Pt(5))
+
+    img(s, "parent_deck_laptop.png", Inches(8), Inches(1.3), width=Inches(4.8))
+
+    tf = text(s, Inches(8), Inches(5.5), Inches(4.5), Inches(1.5), "", size=18)
+    link_line(tf, "Download VS Code", "https://code.visualstudio.com", size=18)
+    link_line(tf, "Download Telegram", "https://telegram.org", size=18)
+
+    # ── SLIDE 4: WHAT PARENTS NEED TO DO ──
     s = prs.slides.add_slide(prs.slide_layouts[6])
     set_bg(s, BG_SOFT)
     text(s, Inches(0.6), Inches(0.3), Inches(10), Inches(0.8),
@@ -295,7 +324,10 @@ def build_deck():
         "",
         "☐  Student's Telegram user ID",
         "       (student gets from @userinfobot)",
-    ], size=22, spacing=Pt(6))
+        "",
+        "☐  VS Code installed on student's laptop",
+        "       (from code.visualstudio.com — free)",
+    ], size=21, spacing=Pt(5))
 
     img(s, "parent_deck_checklist.png", Inches(8.5), Inches(1.3), width=Inches(4))
 
@@ -315,6 +347,7 @@ def build_deck():
     link_line(tf, "OpenRouter (AI model access)", "https://openrouter.ai", size=22)
     link_line(tf, "OpenRouter — Create API Key", "https://openrouter.ai/settings/keys", size=22)
     link_line(tf, "OpenRouter — Add Credits", "https://openrouter.ai/settings/credits", size=22)
+    link_line(tf, "VS Code (code editor)", "https://code.visualstudio.com", size=22)
     link_line(tf, "Telegram (download app)", "https://telegram.org", size=22)
 
     # ── SLIDE 10: CLOSING ──

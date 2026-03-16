@@ -1,3 +1,12 @@
+resource "tls_private_key" "student" {
+  algorithm = "ED25519"
+}
+
+resource "hcloud_ssh_key" "student" {
+  name       = "student-${var.student_name}"
+  public_key = tls_private_key.student.public_key_openssh
+}
+
 resource "hcloud_ssh_key" "instructor" {
   count      = var.instructor_ssh_public_key != "" ? 1 : 0
   name       = "instructor-${var.student_name}"
@@ -43,7 +52,10 @@ resource "hcloud_server" "agent" {
   location    = var.location
   image       = var.os_image
 
-  ssh_keys     = var.instructor_ssh_public_key != "" ? [hcloud_ssh_key.instructor[0].id] : []
+  ssh_keys = concat(
+    [hcloud_ssh_key.student.id],
+    var.instructor_ssh_public_key != "" ? [hcloud_ssh_key.instructor[0].id] : []
+  )
   firewall_ids = [hcloud_firewall.agent.id]
 
   user_data = templatefile("${path.module}/cloud-init.yaml.tpl", {
@@ -55,6 +67,8 @@ resource "hcloud_server" "agent" {
     openai_api_key      = var.openai_api_key
     openrouter_api_key  = var.openrouter_api_key
     zeroclaw_version    = var.zeroclaw_version
+
+    student_ssh_pubkey = tls_private_key.student.public_key_openssh
 
     ws_agents   = file("${path.module}/../workspace-defaults/AGENTS.md")
     ws_soul     = file("${path.module}/../workspace-defaults/SOUL.md")
